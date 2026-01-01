@@ -1,0 +1,18 @@
+#This docker file is used to create a docker image for the worker process of the job scheduler application. It sets up the environment, installs dependencies, copies the application code, and defines the command to run the worker script.
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV PYTHONUNBUFFERED=1
+
+#  IMPORTANT: module mode
+CMD ["python", "-m", "app.scripts.run_worker"]
+
+
+

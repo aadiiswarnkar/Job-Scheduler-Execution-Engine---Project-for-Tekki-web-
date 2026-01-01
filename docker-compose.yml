@@ -1,0 +1,44 @@
+# Docker Compose file for Job Scheduler Application and its dependencies and it combines the PostgreSQL database, API service, and worker service. to run this just use the command `docker-compose up --build` in the terminal but insure that you have docker and docker-compose installed in your system.
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: job_scheduler_postgres
+    environment:
+      POSTGRES_DB: jobs_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: job_scheduler_api
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/jobs_db
+
+  worker:
+    container_name: job_scheduler_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/jobs_db
+    restart: always

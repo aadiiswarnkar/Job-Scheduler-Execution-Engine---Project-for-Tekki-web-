@@ -1,0 +1,20 @@
+#this docker file is used to create a docker image for the Flask API application. It sets up the environment, installs dependencies, copies the application code, and defines the command to run the Flask server.
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies first (better caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project code
+COPY . .
+
+# Ensure logs are flushed immediately
+ENV PYTHONUNBUFFERED=1
+
+# Run Flask API using module mode (IMPORTANT)
+CMD ["python", "-m", "app.main"]
+# Expose port 5000 for the Flask app
+EXPOSE 5000
